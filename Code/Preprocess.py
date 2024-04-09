@@ -3,9 +3,9 @@ import requests
 import json
 
 # Libraries needed for parsing and transforming the data
-# from faker import Faker
-# from faker.providers import address, internet, lorem, sbn
-# from faker_education import SchoolProvider
+from faker import Faker
+from faker.providers import address, internet, lorem, sbn
+from faker_education import SchoolProvider
 from random import choice, randint, uniform
 import pandas as pd
 import numpy as np
@@ -130,12 +130,9 @@ def sorted_papers(paper_ids):
         venue = paper["publicationVenue"]
         paper_id = paper["paperId"]
         title = paper["title"]
-        author_id = []
-        author_name = []
         abstract = paper["abstract"]
         conference_id = str(uuid.uuid4())
         proceeding_id = str(uuid.uuid4())
-        ### I still have to generate the data for proceeding
         if venue["type"] == "conference":
             conference_name = venue["name"]
             conference_year = paper["year"]
@@ -153,7 +150,7 @@ def sorted_papers(paper_ids):
             author_id = author["authorId"]
             author_name = author["name"]
         
-            # We still have to add the append to the database
+            # Append to the dataframe
         
             df2 = {'paper_id': paper_id, 'title': title, 'abstract': abstract, 'field': field, 'domain': domain, 'journal_name': journal, \
                    'author_id': author_id, 'author_name': author_name, 'corresponding_author': corresponding_author, 'conference_id': conference_id , \
@@ -178,7 +175,7 @@ def author_node(data):
 
 
     # Dump to csv
-    df2.to_csv('/data/authors_semantic.csv')
+    df2.to_csv('/data/authors_semantics.csv')
 
 def paper_node(data):
     dict = {"ID": [], "title": [], "abstract": [], "pages": [], "doi": [], "link": []}
@@ -193,7 +190,7 @@ def paper_node(data):
         df = pd.concat([df, pd.DataFrame([df2])], ignore_index=True)
     
     # Dump to csv
-    df2.to_csv('/data/paper_semantic.csv')
+    df2.to_csv('/data/paper_semantics.csv')
 
 def keywords_node(data):
     dict = {"ID": [], "name": [], "domain":[]}
@@ -207,7 +204,7 @@ def keywords_node(data):
         df = pd.concat([df, pd.DataFrame([df2])], ignore_index=True)
     
     # Dump to csv
-    df2.to_csv('/data/keywords_semantic.csv')
+    df2.to_csv('/data/keywords_semantics.csv')
 
 def journal_node(data):
     dict = {"ID": [], "name": []}
@@ -221,7 +218,7 @@ def journal_node(data):
         df = pd.concat([df, pd.DataFrame([df2])], ignore_index=True)
     
     # Dump to csv
-    df2.to_csv('/data/journal_semantic.csv')
+    df2.to_csv('/data/journal_semantics.csv')
 
 def conference_node(data):
     dict =  {"ID": [], "name": [], "year": [], "edition": []}
@@ -236,7 +233,7 @@ def conference_node(data):
             df = pd.concat([df, pd.DataFrame([df2])], ignore_index=True)
     
     # Dump to csv
-    df2.to_csv('/data/conference_semantic.csv')
+    df2.to_csv('/data/conference_semantics.csv')
 
 def proceeding():
     dict_node = {"ID": [], "name": [], "city": []}
@@ -249,13 +246,14 @@ def proceeding():
 
     # Parse data into a dataframe for the proceeding node and the conference_part_of_proceeding
     for _,row in conf.iterrows():
-        df2_node = {"ID": row["proceeding_id"], "name": row["conference"], "city": fake.city}
+        # Assume the conference is the same as the same name as the journal where it was published in
+        df2_node = {"ID": row["proceeding_id"], "name": row["journal_name"], "city": fake.city}
         df2_rel = {"START_ID": row["conference_id"], "END_ID": row["proceeding_id"]}
         df_node = pd.concat([df_node, pd.DataFrame([df2_node])], ignore_index=True)
         df_rel = pd.concat([df_rel, pd.DataFrame([df2_rel])], ignore_index=True)
     
     # Dump to csv
-    df2_node.to_csv('/data/proceeding_semantic.csv')
+    df2_node.to_csv('/data/proceeding_semantics.csv')
     df2_rel.to_csv('/data/conference_part_of_proceeding.csv')
 
 # Functions for parsing data into the relationships
